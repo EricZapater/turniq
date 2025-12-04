@@ -1,17 +1,18 @@
 package customers
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Service interface {
-	Create(request CustomerRequest) (Customer, error)
-	GetAll() ([]Customer, error)
-	GetByID(id string) (Customer, error)
-	Update(id string, request CustomerRequest) (Customer, error)
-	Delete(id string) error
+	Create(ctx context.Context, request CustomerRequest) (Customer, error)
+	GetAll(ctx context.Context) ([]Customer, error)
+	GetByID(ctx context.Context, id string) (Customer, error)
+	Update(ctx context.Context, id string, request CustomerRequest) (Customer, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type service struct {
@@ -22,9 +23,14 @@ func NewService(repository Repository) Service {
 	return &service{repository: repository}
 }
 
-func (s *service) Create(request CustomerRequest) (Customer, error) {
+func (s *service) Create(ctx context.Context, request CustomerRequest) (Customer, error) {
+	tenantID, err := uuid.Parse(request.TenantID)
+	if err != nil {
+		return Customer{}, err
+	}
 	customer := Customer{
 		ID:            uuid.New(),
+		TenantID:      tenantID,
 		Name:          request.Name,
 		Email:         request.Email,
 		VatNumber:     request.VatNumber,
@@ -45,27 +51,27 @@ func (s *service) Create(request CustomerRequest) (Customer, error) {
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
-	return s.repository.Create(customer)
+	return s.repository.Create(ctx, customer)
 }
 
-func (s *service) GetAll() ([]Customer, error) {
-	return s.repository.GetAll()
+func (s *service) GetAll(ctx context.Context) ([]Customer, error) {
+	return s.repository.GetAll(ctx)
 }
 
-func (s *service) GetByID(id string) (Customer, error) {
+func (s *service) GetByID(ctx context.Context, id string) (Customer, error) {
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return Customer{}, err
 	}
-	return s.repository.GetByID(parsedId)
+	return s.repository.GetByID(ctx, parsedId)
 }
 
-func (s *service) Update(id string, request CustomerRequest) (Customer, error) {
+func (s *service) Update(ctx context.Context, id string, request CustomerRequest) (Customer, error) {
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return Customer{}, err
 	}
-	customer, err := s.repository.GetByID(parsedId)
+	customer, err := s.repository.GetByID(ctx, parsedId)
 	if err != nil {
 		return Customer{}, err
 	}
@@ -87,13 +93,13 @@ func (s *service) Update(id string, request CustomerRequest) (Customer, error) {
 	customer.TrialEndsAt = request.TrialEndsAt
 	customer.InternalNotes = request.InternalNotes
 	customer.UpdatedAt = time.Now()
-	return s.repository.Update(customer)
+	return s.repository.Update(ctx, customer)
 }
 
-func (s *service) Delete(id string) error {
+func (s *service) Delete(ctx context.Context, id string) error {
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return err
 	}
-	return s.repository.Delete(parsedId)
+	return s.repository.Delete(ctx, parsedId)
 }

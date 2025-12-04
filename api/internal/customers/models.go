@@ -8,6 +8,7 @@ import (
 
 type Customer struct {
 	ID            uuid.UUID  `json:"id"`
+	TenantID      uuid.UUID  `json:"tenant_id"`
 	Name          string     `json:"name"`
 	Email         string     `json:"email"`
 	VatNumber     string     `json:"vat_number"`
@@ -30,6 +31,7 @@ type Customer struct {
 }
 
 type CustomerRequest struct {
+	TenantID      string     `json:"tenant_id"`
 	Name          string     `json:"name"`
 	Email         string     `json:"email"`
 	VatNumber     string     `json:"vat_number"`

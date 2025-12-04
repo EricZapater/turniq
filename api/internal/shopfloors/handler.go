@@ -1,7 +1,6 @@
-package customers
+package shopfloors
 
 import (
-	"api/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,12 +15,8 @@ func NewHandler(service Service) Handler {
 }
 
 func (h *Handler) Create(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
 	ctx := c.Request.Context()
-	var request CustomerRequest
+	var request ShopfloorRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -31,46 +26,45 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "Customer created successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloor created successfully", "data": response})
 }
 
-func (h *Handler) GetAll(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+func (h *Handler) FindAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	response, err := h.service.GetAll(ctx)
+	response, err := h.service.FindAll(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Customers found successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloors found successfully", "data": response})
 }
 
-func (h *Handler) GetByID(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+func (h *Handler) FindByID(c *gin.Context) {
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	response, err := h.service.GetByID(ctx, id)
+	response, err := h.service.FindByID(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Customer found successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloor found successfully", "data": response})
+}
+
+func (h *Handler) FindByTenantID(c *gin.Context) {
+	ctx := c.Request.Context()
+	id := c.Param("id")
+	response, err := h.service.FindByTenantID(ctx, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloors found successfully", "data": response})
 }
 
 func (h *Handler) Update(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	var request CustomerRequest
+	var request ShopfloorRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -80,20 +74,15 @@ func (h *Handler) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Customer updated successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloor updated successfully", "data": response})
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	err := h.service.Delete(ctx, id)
-	if err != nil {
+	if err := h.service.Delete(ctx, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Customer deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Shopfloor deleted successfully"})
 }

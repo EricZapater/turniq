@@ -8,10 +8,10 @@ import (
 )
 
 type Service interface {
-	Create(ctx context.Context, request OperatorRequest) error
+	Create(ctx context.Context, request OperatorRequest) (Operator, error)
 	FindByID(ctx context.Context, id string) (Operator, error)
 	FindAll(ctx context.Context) ([]Operator, error)
-	Update(ctx context.Context, id string, request OperatorRequest) error
+	Update(ctx context.Context, id string, request OperatorRequest) (Operator, error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -23,9 +23,14 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) Create(ctx context.Context, request OperatorRequest) error {
+func (s *service) Create(ctx context.Context, request OperatorRequest) (Operator, error) {
+	tenantID, err := uuid.Parse(request.TenantID)
+	if err != nil {
+		return Operator{}, err
+	}
 	operator := Operator{
 		ID:          uuid.New(),
+		TenantID:    tenantID,
 		ShopFloorID: request.ShopFloorID,
 		CustomerID:  request.CustomerID,
 		Code:        request.Code,
@@ -36,7 +41,11 @@ func (s *service) Create(ctx context.Context, request OperatorRequest) error {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	return s.repo.Create(ctx, operator)
+	err = s.repo.Create(ctx, operator)
+	if err != nil {
+		return Operator{}, err
+	}
+	return operator, nil
 }
 
 func (s *service) FindByID(ctx context.Context, id string) (Operator, error) {
@@ -51,14 +60,14 @@ func (s *service) FindAll(ctx context.Context) ([]Operator, error) {
 	return s.repo.FindAll(ctx)
 }
 
-func (s *service) Update(ctx context.Context, id string, request OperatorRequest) error {
+func (s *service) Update(ctx context.Context, id string, request OperatorRequest) (Operator, error) {
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
-		return err
+		return Operator{}, err
 	}
 	operator, err := s.repo.FindByID(ctx, parsedID)
 	if err != nil {
-		return err
+		return Operator{}, err
 	}
 	operator.ShopFloorID = request.ShopFloorID
 	operator.CustomerID = request.CustomerID
@@ -68,7 +77,11 @@ func (s *service) Update(ctx context.Context, id string, request OperatorRequest
 	operator.VatNumber = request.VatNumber
 	operator.IsActive = request.IsActive
 	operator.UpdatedAt = time.Now()
-	return s.repo.Update(ctx, operator)
+	err = s.repo.Update(ctx, operator)
+	if err != nil {
+		return Operator{}, err
+	}
+	return operator, nil
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {

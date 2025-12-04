@@ -1,4 +1,4 @@
-package users
+package jobs
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ func NewHandler(service Service) Handler {
 
 func (h *Handler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
-	var request UserRequest
+	var request JobRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -26,45 +26,45 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Job created successfully", "data": response})
 }
 
-func (h *Handler) GetAll(c *gin.Context) {
+func (h *Handler) FindAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	response, err := h.service.GetAll(ctx)
+	response, err := h.service.FindAll(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Users found successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Jobs found successfully", "data": response})
 }
 
-func (h *Handler) GetByID(c *gin.Context) {
+func (h *Handler) FindByID(c *gin.Context) {
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	response, err := h.service.GetByID(ctx, id)
+	response, err := h.service.FindByID(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User found successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Job found successfully", "data": response})
 }
 
-func (h *Handler) GetByCustomerID(c *gin.Context) {
+func (h *Handler) FindByWorkcenterID(c *gin.Context) {
 	ctx := c.Request.Context()
-	customerID := c.Param("customer_id")
-	response, err := h.service.GetByCustomerID(ctx, customerID)
+	workcenterID := c.Param("workcenterID")
+	response, err := h.service.FindByWorkcenterID(ctx, workcenterID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Users found successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Jobs found successfully", "data": response})
 }
 
 func (h *Handler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	var request UserRequest
+	var request JobRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -74,16 +74,16 @@ func (h *Handler) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"message": "Job updated successfully", "data": response})
 }
 
 func (h *Handler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 	id := c.Param("id")
-	err := h.service.Delete(ctx, id)
-	if err != nil {
+	if err := h.service.Delete(ctx, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Job deleted successfully"})
 }
+	

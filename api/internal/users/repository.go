@@ -8,13 +8,13 @@ import (
 )
 
 type Repository interface {
-	Create(user User) (User, error)
-	GetAll() ([]User, error)
-	GetByID(id uuid.UUID) (User, error)
-	GetByCustomerID(customerID uuid.UUID) ([]User, error)
+	Create(ctx context.Context, user User) (User, error)
+	GetAll(ctx context.Context) ([]User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetByCustomerID(ctx context.Context, customerID uuid.UUID) ([]User, error)
 	FindByUsername(ctx context.Context, username string) (User, error)
-	Update(user User) (User, error)
-	Delete(id uuid.UUID) error
+	Update(ctx context.Context, user User) (User, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type repository struct {
@@ -25,19 +25,19 @@ func NewRepository(db *sql.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Create(user User) (User, error) {
-	query := `INSERT INTO users (id, username, email, password, customer_id, is_admin, is_active, created_at, updated_at) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
-	_, err := r.db.Exec(query, user.ID, user.Username, user.Email, user.Password, user.CustomerID, user.IsAdmin, user.IsActive, user.CreatedAt, user.UpdatedAt)
+func (r *repository) Create(ctx context.Context, user User) (User, error) {
+	query := `INSERT INTO users (id, tenant_id, username, email, password, customer_id, is_admin, is_active, created_at, updated_at) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`
+	_, err := r.db.ExecContext(ctx, query, user.ID, user.TenantID, user.Username, user.Email, user.Password, user.CustomerID, user.IsAdmin, user.IsActive, user.CreatedAt, user.UpdatedAt)
 	if err != nil {
 		return User{}, err
 	}
 	return user, nil
 }
 
-func (r *repository) GetAll() ([]User, error) {
+func (r *repository) GetAll(ctx context.Context) ([]User, error) {
 	query := `SELECT * FROM users`
-	rows, err := r.db.Query(query)
+	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +53,9 @@ func (r *repository) GetAll() ([]User, error) {
 	return users, nil
 }
 
-func (r *repository) GetByID(id uuid.UUID) (User, error) {
+func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (User, error) {
 	query := `SELECT * FROM users WHERE id = $1`
-	row := r.db.QueryRow(query, id)
+	row := r.db.QueryRowContext(ctx, query, id)
 	var user User
 	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CustomerID, &user.IsAdmin, &user.IsActive, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		return User{}, err
@@ -63,9 +63,9 @@ func (r *repository) GetByID(id uuid.UUID) (User, error) {
 	return user, nil
 }
 
-func (r *repository) GetByCustomerID(customerID uuid.UUID) ([]User, error) {
+func (r *repository) GetByCustomerID(ctx context.Context, customerID uuid.UUID) ([]User, error) {
 	query := `SELECT * FROM users WHERE customer_id = $1`
-	rows, err := r.db.Query(query, customerID)
+	rows, err := r.db.QueryContext(ctx, query, customerID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,18 +91,18 @@ func (r *repository) FindByUsername(ctx context.Context, username string) (User,
 	return user, nil
 }
 
-func (r *repository) Update(user User) (User, error) {
+func (r *repository) Update(ctx context.Context, user User) (User, error) {
 	query := `UPDATE users SET username = $2, email = $3, password = $4, customer_id = $5, is_admin = $6, is_active = $7, updated_at = $8 WHERE id = $1 RETURNING id`
-	_, err := r.db.Exec(query, user.ID, user.Username, user.Email, user.Password, user.CustomerID, user.IsAdmin, user.IsActive, user.UpdatedAt)
+	_, err := r.db.ExecContext(ctx, query, user.ID, user.Username, user.Email, user.Password, user.CustomerID, user.IsAdmin, user.IsActive, user.UpdatedAt)
 	if err != nil {
 		return User{}, err
 	}
 	return user, nil
 }
 
-func (r *repository) Delete(id uuid.UUID) error {
+func (r *repository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
-	_, err := r.db.Exec(query, id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

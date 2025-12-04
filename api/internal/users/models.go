@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	ID         uuid.UUID `json:"id"`
+	TenantID   uuid.UUID `json:"tenant_id"`
 	Username   string    `json:"username"`
 	Email      string    `json:"email"`
 	Password   string    `json:"password"`
@@ -19,6 +20,7 @@ type User struct {
 }
 
 type UserRequest struct {
+	TenantID   string `json:"tenant_id"`
 	Username   string `json:"username"`
 	Email      string `json:"email"`
 	Password   string `json:"password"`

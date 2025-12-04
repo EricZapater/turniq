@@ -4,7 +4,9 @@ import (
 	"api/config"
 	"api/internal/auth"
 	"api/internal/customers"
+	"api/internal/jobs"
 	"api/internal/operators"
+	"api/internal/payments"
 	"api/internal/tenants"
 	"api/internal/users"
 	"api/middleware"
@@ -44,6 +46,8 @@ func(s *Server)Setup()error{
 	tenantRepo := tenants.NewRepository(s.db)
 	customerRepo := customers.NewRepository(s.db)
 	operatorRepo := operators.NewRepository(s.db)
+	jobRepo := jobs.NewRepository(s.db)
+	paymentRepo := payments.NewRepository(s.db)
 
 	//Services
 	userService := users.NewService(userRepo)
@@ -51,6 +55,8 @@ func(s *Server)Setup()error{
 	customerService := customers.NewService(customerRepo)
 	authService := auth.NewAuthService(userRepo, authMiddleware)
 	operatorService := operators.NewService(operatorRepo)
+	jobService := jobs.NewService(jobRepo)
+	paymentService := payments.NewService(paymentRepo)
 
 	//Handlers
 	userHandler := users.NewHandler(userService)
@@ -58,6 +64,8 @@ func(s *Server)Setup()error{
 	customerHandler := customers.NewHandler(customerService)
 	authHandler := auth.NewAuthHandler(authService, authMiddleware)
 	operatorHandler := operators.NewHandler(operatorService)
+	jobHandler := jobs.NewHandler(jobService)
+	paymentHandler := payments.NewHandler(paymentService)
 	
 
 	s.router.GET("/health", func(c *gin.Context) {
@@ -78,7 +86,9 @@ func(s *Server)Setup()error{
 	tenants.RegisterRoutes(protected, &tenantHandler)	
 	customers.RegisterRoutes(protected, &customerHandler)
 	operators.RegisterRoutes(protected, &operatorHandler)
-	
+	jobs.RegisterRoutes(protected, &jobHandler)
+	payments.RegisterRoutes(protected, &paymentHandler)
+
 	return nil
 	
 }

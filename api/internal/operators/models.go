@@ -8,6 +8,7 @@ import (
 
 type Operator struct {
 	ID          uuid.UUID `json:"id"`
+	TenantID    uuid.UUID `json:"tenant_id"`
 	ShopFloorID uuid.UUID `json:"shop_floor_id"`
 	CustomerID  uuid.UUID `json:"customer_id"`
 	Code        string    `json:"code"`
@@ -20,6 +21,7 @@ type Operator struct {
 }
 
 type OperatorRequest struct {
+	TenantID    string    `json:"tenant_id"`
 	ShopFloorID uuid.UUID `json:"shop_floor_id"`
 	CustomerID  uuid.UUID `json:"customer_id"`
 	Code        string    `json:"code"`

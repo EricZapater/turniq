@@ -15,56 +15,61 @@ func NewHandler(service Service) Handler {
 }
 
 func (h *Handler) Create(c *gin.Context) {
+	ctx := c.Request.Context()
 	var request TenantRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tenant, err := h.service.Create(request)
+	response, err := h.service.Create(ctx, request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, tenant)
+	c.JSON(http.StatusCreated, gin.H{"message": "Tenant created successfully", "data": response})
 }
 
 func (h *Handler) GetAll(c *gin.Context) {
-	tenants, err := h.service.GetAll()
+	ctx := c.Request.Context()
+	response, err := h.service.GetAll(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, tenants)
+	c.JSON(http.StatusOK, gin.H{"message": "Tenants found successfully", "data": response})
 }
 
 func (h *Handler) GetByID(c *gin.Context) {
+	ctx := c.Request.Context()
 	id := c.Param("id")
-	tenant, err := h.service.GetByID(id)
+	response, err := h.service.GetByID(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, tenant)
+	c.JSON(http.StatusOK, gin.H{"message": "Tenant found successfully", "data": response})
 }
 
 func (h *Handler) Update(c *gin.Context) {
+	ctx := c.Request.Context()
 	id := c.Param("id")
 	var request TenantRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tenant, err := h.service.Update(id, request)
+	response, err := h.service.Update(ctx, id, request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, tenant)
+	c.JSON(http.StatusOK, gin.H{"message": "Tenant updated successfully", "data": response})
 }
 
 func (h *Handler) Delete(c *gin.Context) {
+	ctx := c.Request.Context()
 	id := c.Param("id")
-	err := h.service.Delete(id)
+	err := h.service.Delete(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
