@@ -1,0 +1,78 @@
+package auth
+
+import (
+	"api/internal/users"
+	"api/middleware"
+	"context"
+
+	"time"
+
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type AuthService interface {
+    Login(ctx context.Context, req LoginRequest) (string, users.User, time.Time, error)
+    ValidateUser(ctx context.Context, username, password string) (users.User, error)
+}
+
+type authService struct {
+    userRepo users.Repository
+    jwtMiddleware *jwt.GinJWTMiddleware
+}
+
+func NewAuthService(userRepo users.Repository,  jwtMiddleware *jwt.GinJWTMiddleware) AuthService {
+    return &authService{
+        userRepo: userRepo,
+        jwtMiddleware: jwtMiddleware,
+    }
+}
+
+// Login verifica les credencials i retorna un token JWT si són vàlides
+func (s *authService) Login(ctx context.Context, req LoginRequest) (string, users.User, time.Time, error) {
+    // Validar les credencials
+    user, err := s.ValidateUser(ctx, req.Username, req.Password)
+    if err != nil {
+        return "", users.User{}, time.Time{}, err
+    }
+    
+    // Generar token JWT
+    authUser := &middleware.AuthUser{
+        ID:         user.ID.String(),
+        Username:   user.Username,
+        Email:      user.Email,
+        CustomerID: user.CustomerID.String(),
+        IsAdmin:    user.IsAdmin,
+    }
+    token, expire, err := s.jwtMiddleware.TokenGenerator(authUser)
+    if err != nil {
+        return "", users.User{}, time.Time{}, err
+    }
+   
+    user.Password = "" // No retornar la contrasenya en la resposta
+    return token, user,  expire, nil
+}
+
+// ValidateUser verifica si les credencials són vàlides i retorna l'ID de l'usuari
+func (s *authService) ValidateUser(ctx context.Context, username, password string) (users.User, error) {
+    // Obtenir l'usuari per nom d'usuari
+    user, err := s.userRepo.FindByUsername(ctx, username)
+
+    if err != nil {
+        return users.User{}, ErrUserNotFound
+    }
+    
+    // Verificar que l'usuari estigui actiu
+    if !user.IsActive {
+        return users.User{}, ErrInactiveUser
+    }
+    
+    // Verificar la contrasenya
+    err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+    if err != nil {
+        return users.User{}, ErrInvalidCredentials
+    }
+    
+    // Retornar l'ID de l'usuari com a identificador principal
+    return user, nil
+}

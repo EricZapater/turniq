@@ -1,0 +1,10 @@
+{
+  "name": "Test Customer",
+  "contact_person": "John Doe",
+  "email": "john@example.com",
+  "phone": "123456789",
+  "address": "123 Main St",
+  "city": "Test City",
+  "country": "Test Country",
+  "plan": "basic"
+}
