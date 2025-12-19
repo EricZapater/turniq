@@ -4,4 +4,3 @@ dist/
 .gitignore
 .env
 .vscode
-nginx.conf
