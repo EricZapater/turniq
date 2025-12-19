@@ -22,9 +22,6 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Card from "primevue/card";
 import Toolbar from "primevue/toolbar";
-import IconField from "primevue/iconfield";
-import InputIcon from "primevue/inputicon";
-import InputText from "primevue/inputtext";
 
 const toast = useToast();
 const { t } = useI18n();

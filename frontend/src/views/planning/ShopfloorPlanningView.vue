@@ -28,14 +28,12 @@ const savePlanning = async () => {
     await planningStore.saveChanges(selectedShopfloor.value, dateStr);
     toast.add({
       severity: "success",
-      severity: "success",
       summary: t("planning.saved"),
       detail: t("planning.saved_success"),
       life: 2000,
     });
   } catch (error) {
     toast.add({
-      severity: "error",
       severity: "error",
       summary: t("common.error"),
       detail: t("planning.error_saving"),
@@ -270,7 +268,6 @@ const onDropOnShift = async (shiftId: string) => {
       if (exists) {
         toast.add({
           severity: "info",
-          severity: "info",
           summary: t("planning.already_assigned"),
           detail: t("planning.operator_already_in_shift"),
           life: 2000,
@@ -293,14 +290,12 @@ const onDropOnShift = async (shiftId: string) => {
         });
         toast.add({
           severity: "success",
-          severity: "success",
           summary: t("planning.assigned"),
           detail: t("planning.assigned"),
           life: 2000,
         });
       } catch (e) {
         toast.add({
-          severity: "error",
           severity: "error",
           summary: t("common.error"),
           detail: t("planning.cant_assign"),
@@ -332,7 +327,6 @@ const onDropOnOperator = async (
         };
         await planningStore.updateEntry(item.entry_id, updated as any);
         toast.add({
-          severity: "success",
           severity: "success",
           summary: t("planning.moved"),
           detail: t("planning.workcenter_reordered"),
@@ -371,7 +365,6 @@ const onDropOnOperator = async (
         await planningStore.updateEntry(emptyParent.id, req as any);
         toast.add({
           severity: "success",
-          severity: "success",
           summary: t("planning.assigned"),
           detail: t("planning.workcenter_assigned"),
           life: 2000,
@@ -392,14 +385,12 @@ const onDropOnOperator = async (
           });
           toast.add({
             severity: "success",
-            severity: "success",
             summary: t("planning.assigned"),
             detail: t("planning.workcenter_assigned"),
             life: 2000,
           });
         } catch (e) {
           toast.add({
-            severity: "error",
             severity: "error",
             summary: t("common.error"),
             detail: t("planning.error_assigning_wc"),
@@ -466,7 +457,6 @@ const onDropOnWorkcenter = async (
         await planningStore.updateEntry(emptyParent.id, req as any);
         toast.add({
           severity: "success",
-          severity: "success",
           summary: t("planning.assigned"),
           detail: t("planning.job_assigned"),
           life: 2000,
@@ -486,14 +476,12 @@ const onDropOnWorkcenter = async (
           });
           toast.add({
             severity: "success",
-            severity: "success",
             summary: t("planning.assigned"),
             detail: t("planning.job_assigned"),
             life: 2000,
           });
         } catch (e) {
           toast.add({
-            severity: "error",
             severity: "error",
             summary: t("common.error"),
             detail: t("planning.error_assigning_job"),
@@ -509,10 +497,7 @@ const onDropOnWorkcenter = async (
 <template>
   <div class="flex flex-col h-[calc(100vh-4rem)] bg-surface-50">
     <!-- Top Bar -->
-    <div
-      class="h-16 bg-white border-b border-surface-200 px-6 flex items-center justify-between shadow-sm z-10"
-    >
-      <div class="flex items-center gap-4">
+
     <div
       class="h-16 bg-white border-b border-surface-200 px-6 flex items-center justify-between shadow-sm z-10"
     >

@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "../stores/auth.store";
 import { customersApi } from "../api/customers.api";
-import Card from "primevue/card";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();

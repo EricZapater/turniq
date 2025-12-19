@@ -17,8 +17,6 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Card from "primevue/card";
 import Toolbar from "primevue/toolbar";
-import InputGroup from "primevue/inputgroup";
-import InputGroupAddon from "primevue/inputgroupaddon";
 
 const toast = useToast();
 const { t } = useI18n();

@@ -14,7 +14,6 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import ToggleSwitch from "primevue/toggleswitch";
 import ColorPicker from "primevue/colorpicker";
-import ColorPicker from "primevue/colorpicker";
 import DatePicker from "primevue/datepicker"; // For time
 import { useI18n } from "vue-i18n";
 

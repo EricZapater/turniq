@@ -165,8 +165,6 @@ const navigateToDetail = (id: string) => {
 
     <Dialog
       v-model:visible="showFilterDialog"
-      <Dialog
-      v-model:visible="showFilterDialog"
       modal
       header="Filters"
       :style="{ width: '30rem' }"

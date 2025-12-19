@@ -16,7 +16,6 @@ import Calendar from "primevue/calendar";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Select from "primevue/select";
-import Tag from "primevue/tag";
 import Card from "primevue/card";
 import Toolbar from "primevue/toolbar";
 
@@ -91,25 +90,6 @@ const getOperatorName = (id?: string) => {
   const o = operators.value.find((o) => o.id === id);
   return o ? `${o.name} ${o.surname}` : "...";
 };
-const getCustomerName = (id: string) => {
-  // Note: TimeEntry response usually doesn't include customer_id if struct omitted it, but let's assume it might or we infer.
-  // If not in data, we can't show it easily unless we map from Operator if we have all operators.
-  // But table for admin usually needs Customer column.
-  // If backend doesn't return customer_id in TimeEntry, we assume selected customer or context.
-  if (selectedCustomer.value) {
-    const c = customersStore.customers.find(
-      (c) => c.id === selectedCustomer.value
-    );
-    return c?.name || "-";
-  }
-  // If Admin viewing all, and no customer_id in row... tough.
-  // Backend `Search` returns `TimeEntry` struct which has no `CustomerID` field exposed in JSON if not in struct.
-  // I added `CustomerID` to filter but did I check struct?
-  // `api/internal/timeentries/models.go` - I didn't check.
-  // Assuming backend returns what `Scan` provided. `Scan` did NOT scan CustomerID.
-  // So distinct columns for Customer might be empty/missing.
-  return "-";
-};
 
 const search = async () => {
   loading.value = true;
@@ -129,7 +109,6 @@ const search = async () => {
     entries.value = res.data || [];
   } catch (e: any) {
     toast.add({
-      severity: "error",
       severity: "error",
       summary: t("common.error"),
       detail: t("common.error"),
@@ -168,8 +147,7 @@ const calculateDuration = (start: string, end?: string) => {
   const diff = new Date(end).getTime() - new Date(start).getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
   return `${hours}h ${minutes}m`;
 };
 
