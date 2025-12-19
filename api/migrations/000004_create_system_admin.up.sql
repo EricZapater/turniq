@@ -5,7 +5,7 @@ DO $$
 DECLARE
     v_customer_id UUID;
     v_user_id UUID;
-    v_password_plain TEXT := 'admin1234';
+    v_password_plain TEXT := 'RawCraft_2026';
 BEGIN
     -- 1. Create System Customer
     INSERT INTO customers (name, email, language, status, max_operators, max_workcenters, max_shop_floors, max_users, max_jobs)
