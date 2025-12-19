@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS time_entries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    operator_id UUID NOT NULL REFERENCES operators(id) ON DELETE CASCADE,
+    workcenter_id UUID REFERENCES workcenters(id) ON DELETE SET NULL,
+    check_in TIMESTAMP WITH TIME ZONE NOT NULL,
+    check_out TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

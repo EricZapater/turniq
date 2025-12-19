@@ -8,7 +8,6 @@ import (
 
 type Customer struct {
 	ID            uuid.UUID  `json:"id"`
-	TenantID      uuid.UUID  `json:"tenant_id"`
 	Name          string     `json:"name"`
 	Email         string     `json:"email"`
 	VatNumber     string     `json:"vat_number"`
@@ -26,12 +25,16 @@ type Customer struct {
 	Price         float64    `json:"price"`          
 	TrialEndsAt   *time.Time `json:"trial_ends_at"`
 	InternalNotes string     `json:"internal_notes"`
+	MaxOperators int `json:"max_operators"`
+	MaxWorkcenters int `json:"max_workcenters"`
+	MaxShopFloors int `json:"max_shop_floors"`
+	MaxUsers int `json:"max_users"`
+	MaxJobs int `json:"max_jobs"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
 
 type CustomerRequest struct {
-	TenantID      string     `json:"tenant_id"`
 	Name          string     `json:"name"`
 	Email         string     `json:"email"`
 	VatNumber     string     `json:"vat_number"`
@@ -49,4 +52,9 @@ type CustomerRequest struct {
 	Price         float64    `json:"price"`          
 	TrialEndsAt   *time.Time `json:"trial_ends_at"`
 	InternalNotes string     `json:"internal_notes"`
+	MaxOperators int `json:"max_operators"`
+	MaxWorkcenters int `json:"max_workcenters"`
+	MaxShopFloors int `json:"max_shop_floors"`
+	MaxUsers int `json:"max_users"`
+	MaxJobs int `json:"max_jobs"`
 }

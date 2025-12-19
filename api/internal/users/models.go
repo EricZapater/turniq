@@ -8,11 +8,10 @@ import (
 
 type User struct {
 	ID         uuid.UUID `json:"id"`
-	TenantID   uuid.UUID `json:"tenant_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 	Username   string    `json:"username"`
 	Email      string    `json:"email"`
-	Password   string    `json:"password"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	Password   string    `json:"password"`	
 	IsAdmin    bool      `json:"is_admin"`
 	IsActive   bool      `json:"is_active"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -20,10 +19,9 @@ type User struct {
 }
 
 type UserRequest struct {
-	TenantID   string `json:"tenant_id"`
+	CustomerID string `json:"customer_id"`		
 	Username   string `json:"username"`
 	Email      string `json:"email"`
-	Password   string `json:"password"`
-	CustomerID string `json:"customer_id"`	
+	Password   string `json:"password"`	
 	IsActive   bool   `json:"is_active"`
 }

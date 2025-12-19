@@ -7,8 +7,7 @@ import (
 )
 
 type Payment struct {
-	ID            uuid.UUID `json:"id"`
-	TenantID      uuid.UUID `json:"tenant_id"`
+	ID            uuid.UUID `json:"id"`	
 	CustomerID    uuid.UUID `json:"customer_id"`
 	Amount        float64   `json:"amount"`
 	Currency      string    `json:"currency"`
@@ -21,7 +20,6 @@ type Payment struct {
 }
 
 type PaymentRequest struct {
-	TenantID      string    `json:"tenant_id"`
 	CustomerID    string    `json:"customer_id"`
 	Amount        float64   `json:"amount"`
 	Currency      string    `json:"currency"`

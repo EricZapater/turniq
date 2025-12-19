@@ -17,7 +17,7 @@ func NewHandler(service Service) Handler {
 
 func (h *Handler) Create(c *gin.Context) {
 	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	ctx := c.Request.Context()
@@ -34,13 +34,13 @@ func (h *Handler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Customer created successfully", "data": response})
 }
 
-func (h *Handler) GetAll(c *gin.Context) {
+func (h *Handler) FindAll(c *gin.Context) {
 	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	ctx := c.Request.Context()
-	response, err := h.service.GetAll(ctx)
+	response, err := h.service.FindAll(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -48,14 +48,20 @@ func (h *Handler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Customers found successfully", "data": response})
 }
 
-func (h *Handler) GetByID(c *gin.Context) {
-	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-	ctx := c.Request.Context()
+func (h *Handler) FindByID(c *gin.Context) {
 	id := c.Param("id")
-	response, err := h.service.GetByID(ctx, id)
+	
+	// Access Control: Admin OR Own Customer
+	if !middleware.IsAdmin(c) {
+		currentUserCustomerID := middleware.GetCustomerID(c)
+		if currentUserCustomerID != id {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+			return
+		}
+	}
+
+	ctx := c.Request.Context()
+	response, err := h.service.FindByID(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -65,7 +71,7 @@ func (h *Handler) GetByID(c *gin.Context) {
 
 func (h *Handler) Update(c *gin.Context) {
 	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	ctx := c.Request.Context()
@@ -85,7 +91,7 @@ func (h *Handler) Update(c *gin.Context) {
 
 func (h *Handler) Delete(c *gin.Context) {
 	if !middleware.IsAdmin(c) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	ctx := c.Request.Context()

@@ -9,8 +9,8 @@ import (
 
 type Service interface {
 	Create(ctx context.Context, request CustomerRequest) (Customer, error)
-	GetAll(ctx context.Context) ([]Customer, error)
-	GetByID(ctx context.Context, id string) (Customer, error)
+	FindAll(ctx context.Context) ([]Customer, error)
+	FindByID(ctx context.Context, id string) (Customer, error)
 	Update(ctx context.Context, id string, request CustomerRequest) (Customer, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -24,13 +24,8 @@ func NewService(repository Repository) Service {
 }
 
 func (s *service) Create(ctx context.Context, request CustomerRequest) (Customer, error) {
-	tenantID, err := uuid.Parse(request.TenantID)
-	if err != nil {
-		return Customer{}, err
-	}
 	customer := Customer{
 		ID:            uuid.New(),
-		TenantID:      tenantID,
 		Name:          request.Name,
 		Email:         request.Email,
 		VatNumber:     request.VatNumber,
@@ -48,22 +43,27 @@ func (s *service) Create(ctx context.Context, request CustomerRequest) (Customer
 		Price:         request.Price,
 		TrialEndsAt:   request.TrialEndsAt,
 		InternalNotes: request.InternalNotes,
+		MaxOperators:  request.MaxOperators,
+		MaxWorkcenters: request.MaxWorkcenters,
+		MaxShopFloors: request.MaxShopFloors,
+		MaxUsers: request.MaxUsers,
+		MaxJobs: request.MaxJobs,	
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
 	return s.repository.Create(ctx, customer)
 }
 
-func (s *service) GetAll(ctx context.Context) ([]Customer, error) {
-	return s.repository.GetAll(ctx)
+func (s *service) FindAll(ctx context.Context) ([]Customer, error) {
+	return s.repository.FindAll(ctx)
 }
 
-func (s *service) GetByID(ctx context.Context, id string) (Customer, error) {
+func (s *service) FindByID(ctx context.Context, id string) (Customer, error) {
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return Customer{}, err
 	}
-	return s.repository.GetByID(ctx, parsedId)
+	return s.repository.FindByID(ctx, parsedId)
 }
 
 func (s *service) Update(ctx context.Context, id string, request CustomerRequest) (Customer, error) {
@@ -71,7 +71,7 @@ func (s *service) Update(ctx context.Context, id string, request CustomerRequest
 	if err != nil {
 		return Customer{}, err
 	}
-	customer, err := s.repository.GetByID(ctx, parsedId)
+	customer, err := s.repository.FindByID(ctx, parsedId)
 	if err != nil {
 		return Customer{}, err
 	}
@@ -92,6 +92,11 @@ func (s *service) Update(ctx context.Context, id string, request CustomerRequest
 	customer.Price = request.Price
 	customer.TrialEndsAt = request.TrialEndsAt
 	customer.InternalNotes = request.InternalNotes
+	customer.MaxOperators = request.MaxOperators
+	customer.MaxWorkcenters = request.MaxWorkcenters
+	customer.MaxShopFloors = request.MaxShopFloors
+	customer.MaxUsers = request.MaxUsers
+	customer.MaxJobs = request.MaxJobs
 	customer.UpdatedAt = time.Now()
 	return s.repository.Update(ctx, customer)
 }

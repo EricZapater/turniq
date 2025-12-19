@@ -7,8 +7,7 @@ import (
 )
 
 type Shopfloor struct {
-	ID         uuid.UUID       `json:"id"`
-	TenantID   uuid.UUID       `json:"tenant_id"`
+	ID         uuid.UUID       `json:"id"`		
 	CustomerID uuid.UUID       `json:"customer_id"`
 	Name       string    `json:"name"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -16,7 +15,6 @@ type Shopfloor struct {
 }
 
 type ShopfloorRequest struct {
-	TenantID   string    `json:"tenant_id"`
 	CustomerID string    `json:"customer_id"`
 	Name       string `json:"name"`
 }

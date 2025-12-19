@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"api/internal/customers"
 	"api/internal/users"
 	"api/middleware"
 	"context"
@@ -13,25 +14,28 @@ import (
 
 type AuthService interface {
     Login(ctx context.Context, req LoginRequest) (string, users.User, time.Time, error)
+    Register(ctx context.Context, req RegisterRequest) (users.User, error)
     ValidateUser(ctx context.Context, username, password string) (users.User, error)
 }
 
 type authService struct {
-    userRepo users.Repository
-    jwtMiddleware *jwt.GinJWTMiddleware
+	userService users.Service
+    customerService customers.Service
+	jwtMiddleware *jwt.GinJWTMiddleware
 }
 
-func NewAuthService(userRepo users.Repository,  jwtMiddleware *jwt.GinJWTMiddleware) AuthService {
-    return &authService{
-        userRepo: userRepo,
-        jwtMiddleware: jwtMiddleware,
-    }
+func NewAuthService(userService users.Service, customerService customers.Service, jwtMiddleware *jwt.GinJWTMiddleware) AuthService {
+	return &authService{
+		userService: userService,
+		customerService: customerService,
+		jwtMiddleware: jwtMiddleware,
+	}
 }
 
 // Login verifica les credencials i retorna un token JWT si són vàlides
 func (s *authService) Login(ctx context.Context, req LoginRequest) (string, users.User, time.Time, error) {
     // Validar les credencials
-    user, err := s.ValidateUser(ctx, req.Username, req.Password)
+    user, err := s.ValidateUser(ctx, req.Email, req.Password)
     if err != nil {
         return "", users.User{}, time.Time{}, err
     }
@@ -39,9 +43,9 @@ func (s *authService) Login(ctx context.Context, req LoginRequest) (string, user
     // Generar token JWT
     authUser := &middleware.AuthUser{
         ID:         user.ID.String(),
+        CustomerID:   user.CustomerID.String(),
         Username:   user.Username,
-        Email:      user.Email,
-        CustomerID: user.CustomerID.String(),
+        Email:      user.Email,        
         IsAdmin:    user.IsAdmin,
     }
     token, expire, err := s.jwtMiddleware.TokenGenerator(authUser)
@@ -53,10 +57,25 @@ func (s *authService) Login(ctx context.Context, req LoginRequest) (string, user
     return token, user,  expire, nil
 }
 
+func (s *authService) Register(ctx context.Context, req RegisterRequest) (users.User, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+    if err != nil {
+        return users.User{}, err
+    }
+
+    user := users.UserRequest{
+        Email:      req.Email,
+        Password:   string(hashedPassword),
+        CustomerID: req.CustomerID,
+    }
+
+    return s.userService.Create(ctx, user)
+}
+
 // ValidateUser verifica si les credencials són vàlides i retorna l'ID de l'usuari
-func (s *authService) ValidateUser(ctx context.Context, username, password string) (users.User, error) {
-    // Obtenir l'usuari per nom d'usuari
-    user, err := s.userRepo.FindByUsername(ctx, username)
+func (s *authService) ValidateUser(ctx context.Context, email, password string) (users.User, error) {
+    // Obtenir l'usuari per email
+    user, err := s.userService.FindByEmail(ctx, email)
 
     if err != nil {
         return users.User{}, ErrUserNotFound

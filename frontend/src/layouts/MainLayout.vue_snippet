@@ -1,0 +1,7 @@
+const showAuthDialog = ref(false);
+const authMode = ref<"ENTER" | "EXIT">("ENTER");
+const authCode = ref("");
+const authStep = ref<"code" | "confirm">("code");
+const authOperator = ref<any>(null);
+const authEntry = ref<any>(null); // For Exit mode mainly
+const loadingAuth = ref(false);

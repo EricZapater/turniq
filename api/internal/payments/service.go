@@ -2,6 +2,7 @@ package payments
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ type Service interface {
 	FindAll(ctx context.Context) ([]Payment, error)
 	FindById(ctx context.Context, id string) (Payment, error)
 	FindByCustomerId(ctx context.Context, customerId string) ([]Payment, error)
+	Search(ctx context.Context, filter PaymentFilter) ([]Payment, error)
 	Update(ctx context.Context, id string, request PaymentRequest) (Payment, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -25,9 +27,13 @@ func NewService(repo Repository) Service {
 }
 
 func (s *service) Create(ctx context.Context, request PaymentRequest) (Payment, error) {
-	tenantParsedId, err := uuid.Parse(request.TenantID)
-	if err != nil {
-		return Payment{}, err
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return Payment{}, errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return Payment{}, errors.New("user is not admin")
 	}
 	customerParsedId, err := uuid.Parse(request.CustomerID)
 	if err != nil {
@@ -35,7 +41,6 @@ func (s *service) Create(ctx context.Context, request PaymentRequest) (Payment, 
 	}	
 	payment := Payment{
 		ID:            uuid.New(),
-		TenantID:      tenantParsedId,
 		CustomerID:    customerParsedId,
 		Amount:        request.Amount,
 		Currency:      request.Currency,
@@ -50,10 +55,26 @@ func (s *service) Create(ctx context.Context, request PaymentRequest) (Payment, 
 }
 
 func (s *service) FindAll(ctx context.Context) ([]Payment, error) {
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return nil, errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return nil, errors.New("user is not admin")
+	}
 	return s.repo.FindAll(ctx)
 }
 
 func (s *service) FindById(ctx context.Context, id string) (Payment, error) {
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return Payment{}, errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return Payment{}, errors.New("user is not admin")
+	}
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
 		return Payment{}, err
@@ -62,6 +83,14 @@ func (s *service) FindById(ctx context.Context, id string) (Payment, error) {
 }
 
 func (s *service) FindByCustomerId(ctx context.Context, customerId string) ([]Payment, error) {
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return nil, errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return nil, errors.New("user is not admin")
+	}
 	customerParsedId, err := uuid.Parse(customerId)
 	if err != nil {
 		return nil, err
@@ -69,12 +98,29 @@ func (s *service) FindByCustomerId(ctx context.Context, customerId string) ([]Pa
 	return s.repo.FindByCustomerId(ctx, customerParsedId)
 }
 
-func (s *service) Update(ctx context.Context, id string, request PaymentRequest) (Payment, error) {
-	parsedID, err := uuid.Parse(id)
-	if err != nil {
-		return Payment{}, err
+func (s *service) Search(ctx context.Context, filter PaymentFilter) ([]Payment, error) {
+	// Only Admin can search payments (Billing Report)
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return nil, errors.New("invalid or missing is_admin in context")
 	}
-	tenantParsedId, err := uuid.Parse(request.TenantID)
+	if !isAdmin {
+		return nil, errors.New("user is not admin")
+	}
+	return s.repo.Search(ctx, filter)
+}
+
+func (s *service) Update(ctx context.Context, id string, request PaymentRequest) (Payment, error) {
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return Payment{}, errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return Payment{}, errors.New("user is not admin")
+	}
+	parsedID, err := uuid.Parse(id)
 	if err != nil {
 		return Payment{}, err
 	}
@@ -87,7 +133,6 @@ func (s *service) Update(ctx context.Context, id string, request PaymentRequest)
 		return Payment{}, err
 	}
 
-	payment.TenantID = tenantParsedId
 	payment.CustomerID = customerParsedId
 	payment.Amount = request.Amount
 	payment.Currency = request.Currency
@@ -100,6 +145,14 @@ func (s *service) Update(ctx context.Context, id string, request PaymentRequest)
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {
+	isAdminVal := ctx.Value("is_admin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return errors.New("invalid or missing is_admin in context")
+	}
+	if !isAdmin {
+		return errors.New("user is not admin")
+	}
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
 		return err

@@ -5,11 +5,23 @@ import (
 	"log/slog"
 	"time"
 
+	"bytes"
+
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
+
+type bodyLogWriter struct {
+    gin.ResponseWriter
+    body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+    w.body.Write(b)
+    return w.ResponseWriter.Write(b)
+}
 
 var (
 	httpRequestDuration metric.Float64Histogram
@@ -45,6 +57,10 @@ func ObservabilityMiddleware() gin.HandlerFunc {
 		path := c.Request.URL.Path
 		method := c.Request.Method
 
+		// wrap writer
+		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		c.Writer = blw
+
 		// Process request
 		c.Next()
 
@@ -63,14 +79,32 @@ func ObservabilityMiddleware() gin.HandlerFunc {
 		httpRequestCounter.Add(c.Request.Context(), 1, metric.WithAttributes(attrs...))
 
 		// Log request
+		// Log request based on status code
 		if observability.Logger != nil {
-			observability.Logger.Info("HTTP request",
+			logAttrs := []any{
 				slog.String("method", method),
 				slog.String("path", path),
 				slog.Int("status", status),
 				slog.Float64("duration_seconds", duration),
 				slog.String("client_ip", c.ClientIP()),
-			)
+			}
+
+			if len(c.Errors) > 0 {
+				logAttrs = append(logAttrs, slog.String("errors", c.Errors.String()))
+			}
+			
+			// Append response body for non-success codes
+			if status >= 400 {
+				logAttrs = append(logAttrs, slog.String("response_body", blw.body.String()))
+			}
+
+			if status >= 500 {
+				observability.Logger.Error("HTTP request failed", logAttrs...)
+			} else if status >= 400 {
+				observability.Logger.Warn("HTTP request warning", logAttrs...)
+			} else {
+				observability.Logger.Info("HTTP request", logAttrs...)
+			}
 		}
 	}
 }

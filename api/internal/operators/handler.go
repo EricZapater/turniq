@@ -40,9 +40,25 @@ func (h *Handler) FindByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Operator found successfully", "data": response})
 }
 
+func (h *Handler) FindByCode(c *gin.Context) {
+	ctx := c.Request.Context()
+	code := c.Param("code")
+	response, err := h.service.FindByCode(ctx, code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Operator found successfully", "data": response})
+}
+
 func (h *Handler) FindAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	response, err := h.service.FindAll(ctx)
+	
+	var response []Operator
+	var err error
+
+	response, err = h.service.FindAll(ctx)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -7,8 +7,12 @@ import (
 	"api/internal/jobs"
 	"api/internal/operators"
 	"api/internal/payments"
-	"api/internal/tenants"
+	"api/internal/scheduleentries"
+	"api/internal/shifts"
+	"api/internal/shopfloors"
+	"api/internal/timeentries"
 	"api/internal/users"
+	"api/internal/workcenters"
 	"api/middleware"
 	"database/sql"
 	"net/http"
@@ -43,31 +47,40 @@ func(s *Server)Setup()error{
 
 	//Repositories
 	userRepo := users.NewRepository(s.db)
-	tenantRepo := tenants.NewRepository(s.db)
 	customerRepo := customers.NewRepository(s.db)
 	operatorRepo := operators.NewRepository(s.db)
 	jobRepo := jobs.NewRepository(s.db)
 	paymentRepo := payments.NewRepository(s.db)
+	shopfloorRepo := shopfloors.NewRepository(s.db)
+	workcenterRepo := workcenters.NewRepository(s.db)
+	shiftRepo := shifts.NewRepository(s.db)
+	scheduleEntryRepo := scheduleentries.NewRepository(s.db)
+	timeEntryRepo := timeentries.NewRepository(s.db)
 
 	//Services
-	userService := users.NewService(userRepo)
-	tenantService := tenants.NewService(tenantRepo)
 	customerService := customers.NewService(customerRepo)
-	authService := auth.NewAuthService(userRepo, authMiddleware)
-	operatorService := operators.NewService(operatorRepo)
-	jobService := jobs.NewService(jobRepo)
+	userService := users.NewService(userRepo, customerService)
+	authService := auth.NewAuthService(userService,customerService, authMiddleware)
+	operatorService := operators.NewService(operatorRepo, customerService)
+	jobService := jobs.NewService(jobRepo, customerService)
 	paymentService := payments.NewService(paymentRepo)
-
+	shopfloorService := shopfloors.NewService(shopfloorRepo, customerService)
+	workcenterService := workcenters.NewService(workcenterRepo, customerService)
+	shiftService := shifts.NewService(shiftRepo)
+	scheduleEntryService := scheduleentries.NewService(scheduleEntryRepo)
+	timeEntryService := timeentries.NewService(timeEntryRepo)
 	//Handlers
 	userHandler := users.NewHandler(userService)
-	tenantHandler := tenants.NewHandler(tenantService)
 	customerHandler := customers.NewHandler(customerService)
 	authHandler := auth.NewAuthHandler(authService, authMiddleware)
 	operatorHandler := operators.NewHandler(operatorService)
 	jobHandler := jobs.NewHandler(jobService)
 	paymentHandler := payments.NewHandler(paymentService)
-	
-
+	shopfloorHandler := shopfloors.NewHandler(shopfloorService)
+	workcenterHandler := workcenters.NewHandler(workcenterService)
+	shiftHandler := shifts.NewHandler(shiftService)
+	scheduleEntryHandler := scheduleentries.NewHandler(scheduleEntryService)
+	timeEntryHandler := timeentries.NewHandler(timeEntryService)
 	s.router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "OK"})
 	})
@@ -78,17 +91,22 @@ func(s *Server)Setup()error{
 	// Public routes
 	public := s.router.Group("/auth")
 	auth.RegisterRoutes(public, authHandler, authMiddleware)
+	users.RegisterAdminRoutes(public, &userHandler)
 
 	//protected routes
 	protected := s.router.Group("/api")
 	protected.Use(authMiddleware.MiddlewareFunc())
-	users.RegisterRoutes(protected, &userHandler)
-	tenants.RegisterRoutes(protected, &tenantHandler)	
+	protected.Use(middleware.ContextMiddleware()) // Inject context values
+	users.RegisterRoutes(protected, &userHandler)	
 	customers.RegisterRoutes(protected, &customerHandler)
 	operators.RegisterRoutes(protected, &operatorHandler)
 	jobs.RegisterRoutes(protected, &jobHandler)
 	payments.RegisterRoutes(protected, &paymentHandler)
-
+	shopfloors.RegisterRoutes(protected, &shopfloorHandler)
+	workcenters.RegisterRoutes(protected, &workcenterHandler)
+	shifts.RegisterRoutes(protected, &shiftHandler)
+	scheduleentries.RegisterRoutes(protected, &scheduleEntryHandler)
+	timeentries.RegisterRoutes(protected, &timeEntryHandler)
 	return nil
 	
 }

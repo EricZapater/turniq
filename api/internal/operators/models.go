@@ -7,11 +7,10 @@ import (
 )
 
 type Operator struct {
-	ID          uuid.UUID `json:"id"`
-	TenantID    uuid.UUID `json:"tenant_id"`
-	ShopFloorID uuid.UUID `json:"shop_floor_id"`
+	ID          uuid.UUID     `json:"id"`	
+	ShopFloorID uuid.UUID     `json:"shop_floor_id"`
 	CustomerID  uuid.UUID `json:"customer_id"`
-	Code        string    `json:"code"`
+	Code        string        `json:"code"`
 	Name        string    `json:"name"`
 	Surname     string    `json:"surname"`
 	VatNumber   string    `json:"vat_number"`
@@ -21,10 +20,9 @@ type Operator struct {
 }
 
 type OperatorRequest struct {
-	TenantID    string    `json:"tenant_id"`
 	ShopFloorID uuid.UUID `json:"shop_floor_id"`
-	CustomerID  uuid.UUID `json:"customer_id"`
-	Code        string    `json:"code"`
+	CustomerID  string `json:"customer_id"`
+	Code        string `json:"code"`
 	Name        string    `json:"name"`
 	Surname     string    `json:"surname"`
 	VatNumber   string    `json:"vat_number"`

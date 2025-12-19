@@ -21,6 +21,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	response, err := h.service.Create(ctx, request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -31,7 +32,12 @@ func (h *Handler) Create(c *gin.Context) {
 
 func (h *Handler) FindAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	response, err := h.service.FindAll(ctx)
+	
+	var response []Job
+	var err error
+
+	response, err = h.service.FindAll(ctx)	
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -54,6 +60,28 @@ func (h *Handler) FindByWorkcenterID(c *gin.Context) {
 	ctx := c.Request.Context()
 	workcenterID := c.Param("workcenterID")
 	response, err := h.service.FindByWorkcenterID(ctx, workcenterID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Jobs found successfully", "data": response})
+}
+
+func(h *Handler) FindByShopFloorID(c *gin.Context) {
+	ctx := c.Request.Context()
+	shopFloorID := c.Param("shopFloorID")
+	response, err := h.service.FindByShopFloorID(ctx, shopFloorID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Jobs found successfully", "data": response})
+}
+
+func (h *Handler) FindByCustomerID(c *gin.Context) {
+	ctx := c.Request.Context()
+	customerID := c.Param("customerID")
+	response, err := h.service.FindByCustomerID(ctx, customerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

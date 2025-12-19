@@ -7,10 +7,11 @@ import (
 )
 
 type Shift struct {
-	ID          uuid.UUID `json:"id"`
-	TenantID    uuid.UUID `json:"tenant_id"`
-	CustomerID  uuid.UUID `json:"customer_id"`
-	ShopfloorID uuid.UUID `json:"shopfloor_id"`
+	ID          uuid.UUID      `json:"id"`
+	CustomerID  uuid.UUID      `json:"customer_id"`
+	ShopfloorID uuid.NullUUID  `json:"shopfloor_id"`
+	Name        string    `json:"name"`
+	Color       string    `json:"color"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	IsActive    bool      `json:"is_active"`
@@ -18,11 +19,12 @@ type Shift struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type ShiftRequest struct {	
-	TenantID    string `json:"tenant_id"`
+type ShiftRequest struct {
 	CustomerID  string `json:"customer_id"`
 	ShopfloorID string `json:"shopfloor_id"`
+	Name        string `json:"name"`
+	Color       string `json:"color"`
 	StartTime   string `json:"start_time"`
 	EndTime     string `json:"end_time"`
-	IsActive    bool   `json:"is_active"`	
+	IsActive    bool   `json:"is_active"`
 }

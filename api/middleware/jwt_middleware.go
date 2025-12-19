@@ -11,6 +11,7 @@ import (
 
 type AuthUser struct {
 	ID         string
+	TenantID   string
 	Username   string
 	Email      string
 	CustomerID string

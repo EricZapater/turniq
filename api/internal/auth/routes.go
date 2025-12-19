@@ -7,5 +7,6 @@ import (
 
 func RegisterRoutes(router *gin.RouterGroup, handler *AuthHandler, jwtMiddleware *jwt.GinJWTMiddleware) {
 	router.POST("/login", handler.Login)
+	router.POST("/register", handler.Register)
 	router.GET("/refresh_token", jwtMiddleware.RefreshHandler)
 }
