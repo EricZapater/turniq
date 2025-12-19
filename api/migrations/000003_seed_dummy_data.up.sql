@@ -32,7 +32,7 @@ BEGIN
 
     -- 2. Create User (Password: t3st_2026) - Using pgcrypto to hash
     INSERT INTO users (customer_id, email, password, username, is_admin, is_active)
-    VALUES (v_customer_id, 'testuser@testcustomer.com', crypt(v_password_plain, gen_salt('bf')), 'Test Admin', true, true)
+    VALUES (v_customer_id, 'testuser@testcustomer.com', crypt(v_password_plain, gen_salt('bf')), 'Test Admin', false, true)
     RETURNING id INTO v_user_id;
 
     -- 3. Create Shopfloors
