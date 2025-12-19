@@ -1,4 +1,7 @@
-DO $$
+-- Enable pgcrypto extension for password hashing
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DO $
 DECLARE
     v_customer_id UUID;
     v_sf_prod UUID;
@@ -20,15 +23,16 @@ DECLARE
     v_job6 UUID;
     v_job7 UUID;
     v_job8 UUID;
+    v_password_plain TEXT := 't3st_2026';
 BEGIN
     -- 1. Create Customer
     INSERT INTO customers (name, email, language, status, max_operators, max_workcenters, max_shop_floors, max_users, max_jobs)
     VALUES ('Test Customer', 'info@testcustomer.com', 'ca', 'active', 10, 10, 5, 5, 20)
     RETURNING id INTO v_customer_id;
 
-    -- 2. Create User (Password: t3st_2026)
+    -- 2. Create User (Password: t3st_2026) - Using pgcrypto to hash
     INSERT INTO users (customer_id, email, password, username, is_admin, is_active)
-    VALUES (v_customer_id, 'testuser@testcustomer.com', '$2a$10$Jad8aEphJiU3Ps.1aEqXb.KgkhkNjjOMhwWw.N8i18Pc1MIo1wP76', 'Test Admin', true, true)
+    VALUES (v_customer_id, 'testuser@testcustomer.com', crypt(v_password_plain, gen_salt('bf')), 'Test Admin', true, true)
     RETURNING id INTO v_user_id;
 
     -- 3. Create Shopfloors
