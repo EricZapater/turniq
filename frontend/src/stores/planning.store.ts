@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import {
   scheduleApi,
   type ScheduleEntry,
@@ -129,6 +129,78 @@ export const usePlanningStore = defineStore("planning", () => {
     }
   }
 
+  // Getters
+  const availableJobs = computed(() => {
+    // Filter out jobs that are already in the planning (assigned to an entry)
+    const assignedJobIds = new Set<string>(
+      planning.value.filter((e) => e.job_id).map((e) => e.job_id as string)
+    );
+    return resources.value.jobs.filter((j) => !assignedJobIds.has(j.id));
+  });
+
+  const statistics = computed(() => {
+    const operatorLoad: Record<string, number> = {};
+    const shiftOperatorLoad: Record<string, Record<string, number>> = {};
+    const shiftWorkcenterLoad: Record<string, Record<string, number>> = {};
+    const assignedOperatorIds = new Set<string>();
+
+    // Initialize metrics
+    resources.value.shifts.forEach((s) => {
+      shiftOperatorLoad[s.id] = {};
+      shiftWorkcenterLoad[s.id] = {};
+    });
+
+    planning.value.forEach((entry) => {
+      const duration = 0; // entry.duration ?? we need to match job to get duration
+      let jobDuration = 0;
+      if (entry.job_id) {
+        const job = resources.value.jobs.find((j) => j.id === entry.job_id);
+        if (job) jobDuration = job.estimated_duration || 0;
+      }
+
+      // 1. Operator Load (Total & Per Shift)
+      if (entry.operator_id) {
+        const opId = entry.operator_id;
+        assignedOperatorIds.add(opId);
+
+        // Total
+        const currentOpLoad = operatorLoad[opId] || 0;
+        operatorLoad[opId] = currentOpLoad + jobDuration;
+
+        // Per Shift
+        let shiftRecord = shiftOperatorLoad[entry.shift_id];
+        if (!shiftRecord) {
+          shiftRecord = {};
+          shiftOperatorLoad[entry.shift_id] = shiftRecord;
+        }
+        const currentShiftOpLoad = shiftRecord[opId] || 0;
+        shiftRecord[opId] = currentShiftOpLoad + jobDuration;
+      }
+
+      // 2. Workcenter Load (Per Shift)
+      if (entry.workcenter_id && entry.shift_id) {
+        const wcId = entry.workcenter_id;
+        let shiftRecord = shiftWorkcenterLoad[entry.shift_id];
+        if (!shiftRecord) {
+          shiftRecord = {};
+          shiftWorkcenterLoad[entry.shift_id] = shiftRecord;
+        }
+        const currentShiftWcLoad = shiftRecord[wcId] || 0;
+        shiftRecord[wcId] = currentShiftWcLoad + jobDuration;
+      }
+    });
+
+    const unassignedOperatorsCount =
+      resources.value.operators.length - assignedOperatorIds.size;
+
+    return {
+      operatorLoad,
+      shiftOperatorLoad,
+      shiftWorkcenterLoad,
+      unassignedOperatorsCount,
+    };
+  });
+
   return {
     resources,
     planning,
@@ -141,5 +213,7 @@ export const usePlanningStore = defineStore("planning", () => {
     deleteEntry,
     saveChanges,
     unsavedChanges,
+    availableJobs,
+    statistics,
   };
 });

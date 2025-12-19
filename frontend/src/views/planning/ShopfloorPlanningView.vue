@@ -17,8 +17,14 @@ const authStore = useAuthStore();
 const toast = useToast();
 const { t } = useI18n();
 
-const { resources, planning, loading, unsavedChanges } =
-  storeToRefs(planningStore);
+const {
+  resources,
+  planning,
+  loading,
+  unsavedChanges,
+  availableJobs,
+  statistics,
+} = storeToRefs(planningStore);
 const { shopfloors } = storeToRefs(shopfloorsStore);
 
 const savePlanning = async () => {
@@ -560,8 +566,16 @@ const onDropOnWorkcenter = async (
         <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
           <!-- Operators -->
           <div>
-            <h3 class="text-xs font-bold text-surface-500 uppercase mb-2">
+            <h3
+              class="text-xs font-bold text-surface-500 uppercase mb-2 flex justify-between"
+            >
               {{ t("operators.title") }}
+              <span
+                class="bg-red-100 text-red-600 px-1 rounded"
+                title="Operaris sense assignar"
+              >
+                {{ statistics.unassignedOperatorsCount }}
+              </span>
             </h3>
             <div class="flex flex-col gap-2">
               <div
@@ -577,6 +591,9 @@ const onDropOnWorkcenter = async (
                   {{ op.name.charAt(0) }}
                 </div>
                 <span class="text-sm font-medium">{{ op.name }}</span>
+                <span class="text-xs text-surface-400 ml-auto"
+                  >{{ statistics.operatorLoad[op.id] || 0 }}'</span
+                >
               </div>
             </div>
           </div>
@@ -607,7 +624,7 @@ const onDropOnWorkcenter = async (
             </h3>
             <div class="flex flex-col gap-2">
               <div
-                v-for="job in resources.jobs"
+                v-for="job in availableJobs"
                 :key="job.id"
                 draggable="true"
                 @dragstart="onDragStart($event, 'job', job)"
@@ -675,6 +692,14 @@ const onDropOnWorkcenter = async (
                       {{ op.name.charAt(0) }}
                     </div>
                     <span class="font-bold text-blue-900">{{ op.name }}</span>
+                    <span
+                      class="text-xs text-blue-600 bg-blue-100 px-1 rounded ml-1"
+                      title="Hores en aquest torn"
+                    >
+                      {{
+                        statistics.shiftOperatorLoad[shift.id]?.[op.id] || 0
+                      }}'
+                    </span>
                   </div>
                   <Button
                     icon="pi pi-times"
@@ -708,6 +733,14 @@ const onDropOnWorkcenter = async (
                       <div class="flex items-center gap-2 text-sm">
                         <i class="pi pi-cog text-surface-500"></i>
                         <span class="font-semibold">{{ wc.name }}</span>
+                        <span
+                          class="text-xs text-surface-500 bg-surface-200 px-1 rounded"
+                        >
+                          {{
+                            statistics.shiftWorkcenterLoad[shift.id]?.[wc.id] ||
+                            0
+                          }}'
+                        </span>
                       </div>
                     </div>
 
