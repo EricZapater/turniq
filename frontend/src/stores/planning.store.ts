@@ -151,7 +151,7 @@ export const usePlanningStore = defineStore("planning", () => {
     });
 
     planning.value.forEach((entry) => {
-      const duration = 0; // entry.duration ?? we need to match job to get duration
+      // const duration = 0; // entry.duration ?? we need to match job to get duration
       let jobDuration = 0;
       if (entry.job_id) {
         const job = resources.value.jobs.find((j) => j.id === entry.job_id);
