@@ -1,7 +1,7 @@
 -- Enable pgcrypto extension for password hashing
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-DO $
+DO $$
 DECLARE
     v_customer_id UUID;
     v_sf_prod UUID;
